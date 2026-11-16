@@ -139,6 +139,18 @@ Atölyenin amacı, katılımcılara şu üç temel beceriyi kazandırmaktır:
 - Arama kutusuna yazılan metinleri Türkçe karakter duyarlılığıyla katlar (folding): `I`, `ı`, `İ`, `i` karakterleri tek biçime dönüştürülür.
 - Harf hatalarını tolere etmek için `difflib.SequenceMatcher` ile benzerlik puanı hesaplar ve en iyi eşleşen bina/oda önerilerini sunar.
 
+### Bob Doğal Dil Kampüs Asistanı (`ai_assistant.py` & `/api/assistant`)
+Harici bir LLM API'sine ya da `pip` kütüphanesine bağımlı olmadan, tamamen **Python 3 standart kütüphanesi** ile çalışan kural ve niyet (intent) tabanlı bir doğal dil işleme motorudur:
+- **Niyet Sınıflandırma (Intent Classification):** Kullanıcının yazdığı serbest Türkçe ifadeleri analiz ederek 6 temel niyet sınıfına ayırır:
+  1. `study_recommendation`: *"Sessizce ders çalışacak sakin bir yer neresi?"* -> Canlı doluluk oranlarını (`occupancy`) ve yürüme mesafesini hesaplayarak en sakin çalışma alanını önerir ve rotayı otomatik çizer.
+  2. `food_cafe`: *"Açık bir kafe bul"*, *"Karnım acıktı yemekhane nerede?"* -> Güncel saat durumuna göre açık olan en yakın yemekhane veya kafeyi bulur.
+  3. `step_free_route`: *"Tekerlekli sandalye ile kütüphaneye nasıl giderim?"*, *"Engelsiz rota"* -> Merdivenleri (`avoid_stairs=True`) baypas eden engelsiz rota üretir.
+  4. `hours_query`: *"Kütüphane saat kaça kadar açık?"* -> İlgili mekanın açılış ve kapanış saatlerini `opening_hours` motorundan çözümler.
+  5. `schedule_query`: *"Bir sonraki dersim ne zaman?"* -> Öğrencinin CSV programını tarayarak yaklaşan dersin sınıfını ve başlangıç saatini bildirir.
+  6. `route_query`: *"Girişten spor merkezine nasıl giderim?"* -> İki nokta arasındaki en kısa rotayı hesaplar.
+- **Türkçe Kök ve Ek Normalizasyonu:** `mühendisliğe`, `kütüphaneden`, `auditoryumu` gibi çekim eklerini tanıyan yerleşik kök haritası (`STEMS`) ve aksan katlama mekanizması içerir.
+- **İnteraktif Web Entegrasyonu:** Kullanıcı bir soru sorduğunda asistan sadece metin üretmekle kalmaz; doğrudan harita üzerinde ilgili rotayı çizer ve form girdilerini günceller.
+
 ---
 
 ## 3. 7 Atölye Senaryosunun Detaylı Hikâyesi ve Çözümleri
@@ -385,21 +397,41 @@ cd scenarios/s7-career-and-interview/challenge && python3 -m unittest test_openi
 ### Test Özeti Tablosu
 | Test Kategorisi | Test Dosyası / Modül | Koşucu | Test Sayısı | Durum |
 |---|---|---|:---:|:---:|
-| API & Güvenlik Başlıkları | `app/tests/test_api.py` | `unittest` | 11 | ✅ Geçti |
+| API & Güvenlik Başlıkları | `app/tests/test_api.py` | `unittest` | 12 | ✅ Geçti |
 | Kampüs Graf Modeli | `app/tests/test_campus.py` | `unittest` | 13 | ✅ Geçti |
 | Dijkstra & Rotalama | `app/tests/test_routing.py` | `unittest` | 9 | ✅ Geçti |
 | Ders Programı & Çakışma | `app/tests/test_schedule.py` | `unittest` | 20 | ✅ Geçti |
 | Arama & Türkçe Karakter | `app/tests/test_search.py` | `unittest` | 6 | ✅ Geçti |
 | Yoğunluk & Kalabalık | `app/tests/test_occupancy.py` | `unittest` | 6 | ✅ Geçti |
 | Açılış Saatleri Entegrasyonu | `app/tests/test_opening_hours.py` | `unittest` | 4 | ✅ Geçti |
+| Doğal Dil AI Asistan | `app/tests/test_assistant.py` | `unittest` | 6 | ✅ Geçti |
 | RouteQL Yorumlayıcısı | `scenarios/s3-build-a-language/test_routeql.py` | `unittest` | 16 | ✅ Geçti |
 | JavaScript Schedule Portu | `scenarios/s4-translate-code/out/schedule.test.mjs` | `node:test` | 20 | ✅ Geçti |
 | Mülakat Ev Ödevi | `scenarios/s7-career-and-interview/challenge/test_opening_hours.py` | `unittest` | 14 | ✅ Geçti |
-| **TOPLAM** | **Bütünleşik Doğrulama Takımı** | — | **119** | **%100 BAŞARILI** |
+| **TOPLAM** | **Bütünleşik Doğrulama Takımı** | — | **126** | **%100 BAŞARILI** |
 
 ---
 
-## 8. Tasarım İlkeleri, Güvenlik ve Katı Kurallar
+## 8. Bob Agentic AI ve Güvenlik Altyapısı (`.bob/`)
+
+Projenin kök dizinindeki `.bob/` klasörü, IBM Bob ajanının davranışlarını, izin sınırlarını ve özel becerilerini belirleyen kurumsal ajan konfigürasyonunu barındırır:
+
+### 1. Özel Ajan Modları (`.bob/custom_modes.yaml`)
+- **`grader` (Ödev Değerlendirici):** `groups: [read, skill]` yetkisiyle sınırlandırılmıştır; dosya yazma yetkisi bulunmadığı için öğrenci kodunu bozamaz veya hile yapamaz.
+- **`campus-guide` (Kampüs Rehberi):** Yalnızca harita, rotalama, erişilebilirlik ve mekan sorgulamalarında uzmanlaşmış rehber modu.
+- **`code-auditor` (Kod & Güvenlik Denetçisi):** Harici paket kullanımını (`pip`/`npm`), güvensiz fonksiyonları (`eval`/`exec`) ve kural ihlallerini denetleyen bağımsız güvenlik modu.
+
+### 2. Ajan Becerileri (Skills)
+- **`campus-guide` (`.bob/skills/campus-guide/SKILL.md`):** Kampüs graf teorisi, engelsiz rotalama, bina açılış saatleri ve yoğunluk analizini yürüten uzman ajan becerisi.
+- **`code-auditor` (`.bob/skills/code-auditor/SKILL.md`):** Kod tabanındaki determinizmi, güvenlik başlıklarını, bellek tüketimini ve standart kütüphane uyumluluğunu doğrulayan otomatik denetim becerisi.
+
+### 3. Ajanik Mühendislik Kuralları (Rules)
+- **`feedback-tone.md`:** Öğrenci geri bildirimlerinde yapıcı, teşvik edici ve öğretici dili garanti altına alan pedagojik kural seti.
+- **`agentic-engineering.md`:** Test güdümlü geliştirme (TDD), kök neden tespiti, standart kütüphane sadakati ve güvenli ajan davranışı ilkelerini zorunlu kılan mühendislik anayasası.
+
+---
+
+## 9. Tasarım İlkeleri, Güvenlik ve Katı Kurallar
 
 Bu depoda kod geliştiren ajanların ve yazılımcıların uymakla yükümlü olduğu katı kurallar:
 1. **Harici Bağımlılık Yasağı:** Kod tabanına `pip install` veya `npm install` gerektirecek hiçbir harici paket eklenemez. Yalnızca Python ve Node.js yerleşik standart kütüphaneleri kullanılır.
@@ -411,7 +443,7 @@ Bu depoda kod geliştiren ajanların ve yazılımcıların uymakla yükümlü ol
 
 ---
 
-## 9. Takım Çalışması ve Katkı Rehberi
+## 10. Takım Çalışması ve Katkı Rehberi
 
 Takım arkadaşlarınızla birlikte çalışırken şu adımları izleyebilirsiniz:
 1. Bir takım üyesi depoyu GitHub üzerinden **Fork** eder ve diğer arkadaşlarını **Collaborator** olarak ekler.

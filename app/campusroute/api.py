@@ -146,6 +146,20 @@ class CampusApi:
             results.append(ev_copy)
         return {"events": results}
 
+    def assistant(self, q):
+        query_text = q.get("q", [""])[0]
+        now = _parse_now(q.get("now", [""])[0]) if q.get("now") else self.clock()
+        current_place = q.get("from", ["gate-main"])[0]
+        from .ai_assistant import CampusAIAssistant
+        bot = CampusAIAssistant(self.campus, self.sessions, self.reports)
+        res = bot.process(query_text, now=now, current_place=current_place)
+        return {
+            "reply": res.reply,
+            "intent": res.intent,
+            "route": res.route,
+            "action": res.action,
+        }
+
     ROUTES = {
         "/api/places": "places",
         "/api/search": "search",
@@ -153,6 +167,7 @@ class CampusApi:
         "/api/next-class": "next_class",
         "/api/crowd": "crowd",
         "/api/events": "events",
+        "/api/assistant": "assistant",
     }
 
     def handle(self, path: str, query: dict):

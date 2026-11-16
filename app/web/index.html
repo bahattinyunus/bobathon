@@ -41,6 +41,41 @@
     <!-- SOL KOLON: ROTA, ARAMA, ETKİNLİKLER & DERSLER -->
     <div class="sidebar-column">
       
+      <!-- BOB AI ASİSTAN PANELİ -->
+      <section class="card panel-ai-assistant" aria-labelledby="ai-h">
+        <div class="card-header">
+          <div class="card-title">
+            <span class="ai-sparkle-icon">✨</span>
+            <h2 id="ai-h">Bob AI Kampüs Asistanı</h2>
+          </div>
+          <span class="ai-model-tag">Doğal Dil Motoru</span>
+        </div>
+
+        <form id="ai-form" class="ai-input-form">
+          <div class="ai-input-wrapper">
+            <input id="ai-query" type="text" placeholder="Bob'a sor... (örn: bana açık bir kafe bul, kütüphaneye merdivensiz rota)" autocomplete="off">
+            <button type="submit" class="ai-submit-btn" title="Sor">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+            </button>
+          </div>
+        </form>
+
+        <div class="ai-quick-pills">
+          <button type="button" class="ai-pill" data-ask="bana açık bir kafe bul">☕ Açık Kafe</button>
+          <button type="button" class="ai-pill" data-ask="kütüphaneye merdivensiz nasıl giderim?">♿ Engelsiz Rota</button>
+          <button type="button" class="ai-pill" data-ask="sessizce ders çalışacak bir yer öner">📖 Sessiz Çalışma</button>
+          <button type="button" class="ai-pill" data-ask="sıradaki dersim ne zaman?">⏰ Sıradaki Ders</button>
+        </div>
+
+        <div id="ai-response-box" class="ai-response-card" style="display: none;">
+          <div class="ai-avatar">🤖</div>
+          <div id="ai-response-text" class="ai-response-content"></div>
+        </div>
+      </section>
+
       <!-- ROTA PLANLAYICI PANELİ -->
       <section class="card panel-route" aria-labelledby="route-h">
         <div class="card-header">

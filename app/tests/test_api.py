@@ -43,6 +43,11 @@ class ApiLogicTest(unittest.TestCase):
         self.assertGreaterEqual(len(body["events"]), 1)
         self.assertIn("place_name", body["events"][0])
 
+    def test_assistant_api(self):
+        body = self.api.handle("/api/assistant", {"q": ["bana açık bir kafe bul"]})
+        self.assertEqual(body["intent"], "food_recommendation")
+        self.assertIn("Çınar", body["reply"])
+
 
 class ApiHttpTest(unittest.TestCase):
     """Runs the real HTTP server on 127.0.0.1 with a random free port."""

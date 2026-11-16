@@ -309,6 +309,60 @@ async function loadEvents() {
   }
 }
 
+// BOB AI ASSISTANT
+async function askAssistant(query) {
+  const q = (query || "").trim();
+  if (!q) return;
+
+  const box = $("ai-response-box");
+  const textEl = $("ai-response-text");
+  if (box && textEl) {
+    box.style.display = "flex";
+    textEl.textContent = "Bob düşünüyor ve kampüsü tarıyor...";
+  }
+
+  try {
+    const fromVal = $("from").value || "gate-main";
+    const nowVal = $("now").value || "";
+    const res = await api("/api/assistant", { q, from: fromVal, now: nowVal });
+
+    if (textEl) {
+      textEl.textContent = res.reply;
+    }
+
+    // If AI found a route, automatically update map and inputs!
+    if (res.route) {
+      const r = res.route;
+      if (r.names && r.names.length) {
+        $("from").value = r.names[0];
+        $("to").value = r.names[r.names.length - 1];
+      }
+      $("route-summary").textContent =
+        `${r.names[0]} → ${r.names[r.names.length - 1]}: ${r.meters} m, yaklaşık ${r.minutes} dk` +
+        (r.has_stairs ? " ⚠️ (merdiven içerir)" : " ✨ (düz ayak / engelsiz rota)");
+
+      const steps = $("route-steps");
+      steps.replaceChildren();
+      for (const s of r.steps || []) {
+        steps.append(el("li", s));
+      }
+
+      const statsRow = $("route-stats");
+      if (statsRow) {
+        statsRow.style.display = "flex";
+        $("stat-calories").textContent = `~${r.calories || Math.round(r.meters * 0.05)} kcal`;
+        $("stat-carbon").textContent = `${r.co2_saved_g || Math.round(r.meters * 0.14)} g CO₂`;
+      }
+
+      drawMap(r.path);
+    }
+  } catch (err) {
+    if (textEl) {
+      textEl.textContent = "Asistan yanıt veremedi: " + err.message;
+    }
+  }
+}
+
 // INITIALIZE
 async function init() {
   initTheme();
@@ -352,6 +406,28 @@ async function init() {
       const query = chip.getAttribute("data-search");
       $("q").value = query;
       onSearch();
+    });
+  });
+
+  // AI Assistant form
+  const aiForm = $("ai-form");
+  if (aiForm) {
+    aiForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const q = $("ai-input").value.trim();
+      if (q) askAssistant(q);
+    });
+  }
+
+  // AI Prompt Pills
+  document.querySelectorAll(".ai-pill").forEach((pill) => {
+    pill.addEventListener("click", () => {
+      const q = pill.getAttribute("data-q");
+      if (q) {
+        const inp = $("ai-input");
+        if (inp) inp.value = q;
+        askAssistant(q);
+      }
     });
   });
 
