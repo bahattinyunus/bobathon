@@ -1,24 +1,26 @@
-# Scenario menu
+# Senaryo Menüsü (Scenario Menu)
 
-Pick **two**. Every scenario is independent and works on the shared CampusRoute app.
+Bu depoda yer alan **7 bağımsız senaryodan** dilediğiniz ikisini seçebilirsiniz. Her senaryo bağımsızdır ve paylaşılan CampusRoute uygulaması üzerinde çalışır.
 
-| # | Scenario | Track | Coding? | Risk of overrunning 10 min | Headline Bob features |
+| # | Senaryo | Alan | Kodlama Gereksinimi | Süre / Risk | Öne Çıkan Bob / Ajan Yetenekleri |
 |---|---|---|---|---|---|
-| [1](s1-lecture-to-study-page/CARD.md) | Turn a messy lecture into a study page | Learning | No | Low | Ask, `@` file + URL, Mermaid, Agent writes HTML |
-| [2](s2-assignment-grader/CARD.md) | Teach Bob to grade: skill + read-only mode | Build | Read Python | Medium | Skills, custom modes, tool permissions, rules |
-| [3](s3-build-a-language/CARD.md) | Build a language from scratch (RouteQL) | Build | Yes | **High** | Plan → new task → Agent, approvals, tests |
-| [4](s4-translate-code/CARD.md) | Port a real module to another language | Build | Yes | **High** | Ask analysis, Agent port, tests, literate coding |
-| [5](s5-understand-legacy-code/CARD.md) | Understand legacy code you didn't write | Learning | Read Python | Low | Line-range `@`, code actions, `Cmd/Ctrl+L`, Mermaid |
-| [6](s6-project-plan/CARD.md) | Plan a 4-week team sprint, then change it | Projects & career | No | Medium | Plan mode, multi-file `@`, gantt, re-planning |
-| [7](s7-career-and-interview/CARD.md) | CV review and a real interview take-home | Projects & career | Path B only | **High** (pick one path) | `.docx` via `@`, Ask vs Agent, approvals, custom mode |
+| [1](s1-lecture-to-study-page/CARD.md) | Karmaşık ders notlarını çalışma sayfasına dönüştürme | Öğrenme | Hayır | Düşük | Ask modu, `@` dosya/URL referansları, Mermaid, Agent ile HTML üretimi |
+| [2](s2-assignment-grader/CARD.md) | Notlandırma öğretimi: Beceri (Skill) + Salt-Okunur Mod | Geliştirme | Python okuma | Orta | Yetenekler (Skills), özel modlar, araç izinleri, pedagojik kurallar |
+| [3](s3-build-a-language/CARD.md) | Sıfırdan programlama dili inşası (RouteQL) | Geliştirme | Evet | **Yüksek** | Planlama → yeni görev → Ajan, onaylar, kabul testleri |
+| [4](s4-translate-code/CARD.md) | Gerçek bir modülü başka bir dile taşıma (JS portu) | Geliştirme | Evet | **Yüksek** | Ask analizi, Ajan portu, testler, tuzak tespiti |
+| [5](s5-understand-legacy-code/CARD.md) | Yazmadığınız eski (miras) kodu anlama | Öğrenme | Python okuma | Düşük | Satır aralığı `@`, kod eylemleri, `Cmd/Ctrl+L`, Mermaid akış şeması |
+| [6](s6-project-plan/CARD.md) | 4 haftalık takım sprintini planlama ve kriz yönetimi | Proje & Kariyer | Hayır | Orta | Plan modu, çoklu dosya `@`, Gantt takvimi, yeniden planlama |
+| [7](s7-career-and-interview/CARD.md) | Özgeçmiş incelemesi ve teknik mülakat görevi | Proje & Kariyer | Yol B için Evet | **Yüksek** | `.docx` okuma, Ask vs Agent, onay mekanizması, mülakat görevi |
 
-## Good pairs
+---
 
-| You are… | Try |
+## Önerilen Eşleşmeler
+
+| Profiliniz | Önerilen Senaryo Çifti |
 |---|---|
-| Not a programmer | **1 + 6**, or **6 + 7A** |
-| 1st/2nd-year CS | **5 + 1**, or **5 + 2** |
-| Confident coder | **3 + 5**, or **4 + 2** |
-| Job-hunting | **7 + 6** |
+| Programcı değilseniz | **1 + 6** veya **6 + 7A** |
+| 1. veya 2. sınıf Bilgisayar Mühendisliği | **5 + 1** veya **5 + 2** |
+| Deneyimli / Kendine güvenen yazılımcı | **3 + 5** veya **4 + 2** |
+| İş / Staj arayanlar | **7 + 6** |
 
-Avoid pairing two **High** scenarios in a 30-minute session.
+> **İpucu:** 30 dakikalık bir çalışma oturumunda iki "Yüksek" riskli senaryoyu birlikte seçmekten kaçının.
