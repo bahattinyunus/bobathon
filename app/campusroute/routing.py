@@ -50,6 +50,8 @@ class Route:
             "names": [campus.places[p].name for p in self.path],
             "meters": self.meters,
             "minutes": self.minutes,
+            "calories": max(1, round(self.meters * 0.05)),
+            "co2_saved_g": round(self.meters * 0.14),
             "has_stairs": self.has_stairs,
             "steps": describe(self, campus),
         }

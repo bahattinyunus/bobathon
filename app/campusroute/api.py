@@ -17,7 +17,7 @@ from pathlib import Path
 from typing import Callable, Optional
 from urllib.parse import parse_qs, urlparse
 
-from . import occupancy, routing, schedule, search
+from . import occupancy, opening_hours, routing, schedule, search
 from .campus import Campus, UnknownPlaceError, load_campus
 
 APP_DIR = Path(__file__).resolve().parent.parent
@@ -60,10 +60,19 @@ class CampusApi:
         self.reports = reports
         self.clock = clock
 
-    def places(self, _q):
+    def places(self, q):
+        now = _parse_now(q.get("now", [""])[0]) if q and q.get("now") else self.clock()
         return {
             "places": [
-                {"id": p.id, "name": p.name, "kind": p.kind, "x": p.x, "y": p.y, "hours": p.hours}
+                {
+                    "id": p.id,
+                    "name": p.name,
+                    "kind": p.kind,
+                    "x": p.x,
+                    "y": p.y,
+                    "hours": p.hours,
+                    "open_now": opening_hours.is_open(p.hours, now) if p.hours else None,
+                }
                 for p in self.campus.places.values()
             ],
             "edges": [
@@ -120,12 +129,30 @@ class CampusApi:
                 levels[place.id] = level
         return {"now": now.isoformat(timespec="minutes"), "levels": levels}
 
+    def events(self, _q):
+        events_file = DATA_DIR / "events.sample.json"
+        if not events_file.exists():
+            return {"events": []}
+        try:
+            with open(events_file, encoding="utf-8") as fh:
+                data = json.load(fh)
+        except Exception:
+            return {"events": []}
+        results = []
+        for ev in data.get("events", []):
+            place = self.campus.places.get(ev.get("place"))
+            ev_copy = dict(ev)
+            ev_copy["place_name"] = place.name if place else ev.get("place")
+            results.append(ev_copy)
+        return {"events": results}
+
     ROUTES = {
         "/api/places": "places",
         "/api/search": "search",
         "/api/route": "route",
         "/api/next-class": "next_class",
         "/api/crowd": "crowd",
+        "/api/events": "events",
     }
 
     def handle(self, path: str, query: dict):

@@ -24,6 +24,10 @@
         </div>
       </div>
       <div class="header-actions">
+        <!-- Tema Değiştirici (CR-15) -->
+        <button type="button" id="theme-toggle" class="theme-toggle-btn" title="Temayı Değiştir" aria-label="Koyu/Açık Tema Değiştir">
+          <span id="theme-icon">🌙</span>
+        </button>
         <div class="status-badge">
           <span class="pulse-dot"></span>
           <span>Sistem Çevrimiçi</span>
@@ -34,10 +38,10 @@
   </header>
 
   <main id="main">
-    <!-- SOL KOLON: ROTA & ARAMA -->
+    <!-- SOL KOLON: ROTA, ARAMA, ETKİNLİKLER & DERSLER -->
     <div class="sidebar-column">
       
-      <!-- ROTA PANELİ -->
+      <!-- ROTA PLANLAYICI PANELİ -->
       <section class="card panel-route" aria-labelledby="route-h">
         <div class="card-header">
           <div class="card-title">
@@ -46,7 +50,7 @@
             </svg>
             <h2 id="route-h">Rota Planlayıcı</h2>
           </div>
-          <button type="button" id="swap-btn" class="icon-btn" title="Noktaları Değiştir" aria-label="Başlangıç ve hedefi değiştir">
+          <button type="button" id="swap-btn" class="icon-btn" title="Noktaları Değiştir (A ⇄ B)" aria-label="Başlangıç ve hedefi değiştir">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M7 16V4m0 0L3 8m4-4l4 4m6 4v12m0 0l4-4m-4 4l-4-4"/>
             </svg>
@@ -79,28 +83,48 @@
               <input type="checkbox" id="avoid-stairs">
               <span class="toggle-slider"></span>
               <span class="toggle-text">
-                <strong>Merdivenlerden Kaçın</strong>
+                <strong>Merdivenlerden Kaçın (CR-13)</strong>
                 <small>Tekerlekli sandalye & düz ayak rota</small>
               </span>
             </label>
           </div>
 
-          <button type="submit" class="primary-btn">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <circle cx="11" cy="11" r="8"></circle>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-            </svg>
-            En Kısa Rotayı Bul
-          </button>
+          <div class="action-buttons-row">
+            <button type="submit" class="primary-btn">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+              En Kısa Rotayı Bul
+            </button>
+            <button type="button" id="print-route-btn" class="secondary-btn" title="Rotayı Yazdır / Paylaş">
+              🖨️ Yazdır
+            </button>
+          </div>
         </form>
 
         <div id="route-result-container" class="route-result">
           <div id="route-summary" class="summary-card" aria-live="polite"></div>
+          
+          <!-- EKO & SAĞLIK İSTATİSTİKLERİ -->
+          <div id="route-stats" class="stats-row" style="display: none;">
+            <div class="stat-pill">
+              <span class="stat-icon">🔥</span>
+              <span id="stat-calories">~40 kcal</span>
+              <span class="stat-label">Kalori Yakımı</span>
+            </div>
+            <div class="stat-pill">
+              <span class="stat-icon">🌱</span>
+              <span id="stat-carbon">110 g CO₂</span>
+              <span class="stat-label">Karbon Tasarrufu</span>
+            </div>
+          </div>
+
           <ol id="route-steps" class="step-list"></ol>
         </div>
       </section>
 
-      <!-- ARAMA PANELİ -->
+      <!-- ARAMA PANELİ (CR-11 & CR-19) -->
       <section class="card panel-search" aria-labelledby="search-h">
         <div class="card-header">
           <div class="card-title">
@@ -121,10 +145,23 @@
           <button type="button" class="quick-chip" data-search="kütüphane">📚 Kütüphane</button>
           <button type="button" class="quick-chip" data-search="cafe">☕ Çınar Kafe</button>
           <button type="button" class="quick-chip" data-search="mühendislik">⚙ Mühendislik</button>
-          <button type="button" class="quick-chip" data-search="spor">🏀 Spor</button>
+          <button type="button" class="quick-chip" data-search="spor">🏀 Spor Merkezi</button>
         </div>
 
         <ul id="results" class="search-results-list"></ul>
+      </section>
+
+      <!-- GÜNÜN KAMPÜS ETKİNLİKLERİ (CR-16) -->
+      <section class="card panel-events" aria-labelledby="events-h">
+        <div class="card-header">
+          <div class="card-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+            </svg>
+            <h2 id="events-h">Kampüs Etkinlikleri (CR-16)</h2>
+          </div>
+        </div>
+        <ul id="events-list" class="events-list"></ul>
       </section>
 
       <!-- DERS TAKVİMİ & CANLI YOĞUNLUK -->
@@ -156,7 +193,7 @@
               <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
               <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
             </svg>
-            Bölge Yoğunlukları
+            Bölge Yoğunlukları (Canlı)
           </h3>
           <ul id="crowd" class="crowd-list"></ul>
         </div>
@@ -173,7 +210,7 @@
             <h2>İnteraktif Kampüs Planı</h2>
           </div>
           <div class="map-controls">
-            <span class="map-hint">💡 İpucu: Haritadaki binalara tıklayarak rota oluşturabilirsiniz.</span>
+            <span class="map-hint">💡 Binalara tıklayarak hızlıca rota oluşturabilirsiniz.</span>
           </div>
         </div>
 
@@ -185,7 +222,7 @@
           <div class="legend-items">
             <span class="legend-badge"><span class="sw route"></span> Aktif Rota</span>
             <span class="legend-badge"><span class="sw stairs"></span> Merdivenli Yol</span>
-            <span class="legend-badge"><span class="sw covered"></span> Kapalı / Yağmur Korumalı Yol</span>
+            <span class="legend-badge"><span class="sw covered"></span> Kapalı / Yağmurluklu Yol</span>
             <span class="legend-badge"><span class="sw walkway"></span> Standart Yürüyüş Yolu</span>
           </div>
         </div>
@@ -196,7 +233,7 @@
   <footer class="app-footer">
     <div class="footer-container">
       <p><strong>CampusRoute</strong> · IBM Bob ile Eyleyen Yapay Zekâ (Agentic AI) Atölyesi için geliştirilmiş kurgusal kampüs navigasyon platformu.</p>
-      <p class="copyright">Dijkstra En Kısa Yol &bull; RouteQL &bull; Erişilebilir Engelsiz Rotalama</p>
+      <p class="copyright">Dijkstra En Kısa Yol &bull; RouteQL &bull; Açık/Kapalı Saat Kontrolü (CR-11) &bull; Etkinlik Takvimi (CR-16)</p>
     </div>
   </footer>
 

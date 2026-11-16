@@ -139,8 +139,12 @@ Bu depoda, atölye kapsamındaki tüm senaryolar ve çekirdek uygulama eksiksiz 
 - **Test Başarımı:** `test_opening_hours.py` içerisindeki **14 testin tamamı (14/14) firesiz geçti.**
 
 ### CampusRoute Uygulama Çekirdeği İyileştirmeleri
-- **Entegrasyon:** `app/campusroute/opening_hours.py` ve `app/tests/test_opening_hours.py` eklenerek CR-11 özelliği çekirdek uygulamaya taşındı.
-- **Genel Test Durumu:** Çekirdek test takımı 63'ten **67 teste çıkarıldı ve %100 başarı sağlandı.**
+- **CR-11 "Açık / Kapalı" Durumu:** `opening_hours` motoru doğrudan `/api/places` uç noktasına entegre edildi. Yer ve arama sonuçlarında binaların o an açık veya kapalı olduğu rozetlerle gösterilir.
+- **CR-15 Koyu / Açık Tema Değiştirici:** Başlık çubuğuna eklenen tema anahtarı (`☀️ / 🌙`) ile kullanıcı tercihine göre kalıcı (`localStorage`) tema değişimi sağlandı.
+- **CR-16 Kampüs Etkinlik Takvimi:** `/api/events` uç noktası ve etkinlik kartları eklendi. Öğrenciler kampüsteki panel, turnuva ve atölyeleri görüp *"Rotayı Çiz"* ile anında yol tarifi alabilir.
+- **Eko & Sağlık Metrikleri:** Hesaplanan her rota için adım mesafesine bağlı tahmini kalori yakımı (`~kcal`) ve karbon tasarrufu (`g CO₂`) dinamik olarak sunulur.
+- **Yazdırma Desteği:** `@media print` stilleri ile rota ve adım talimatlarını temiz bir çıktı formatında yazdırma olanağı eklendi.
+- **Genel Test Durumu:** Çekirdek test takımı 63'ten **69 teste çıkarıldı ve %100 başarı sağlandı (Toplam: 119 test).**
 
 ---
 
@@ -181,7 +185,7 @@ python3 scenarios/s3-build-a-language/out/routeql.py scenarios/s3-build-a-langua
 Tüm modüller ve senaryolar bağımsız test takımlarıyla korunmaktadır. Aşağıdaki komutlarla tüm sistemi tek seferde doğrulayabilirsiniz:
 
 ```bash
-# 1. CampusRoute Çekirdek Testleri (67 test)
+# 1. CampusRoute Çekirdek Testleri (69 test)
 cd app && python3 -m unittest discover -s tests
 
 # 2. RouteQL Dil Kabul Testleri (16 test)
@@ -194,7 +198,7 @@ node --test scenarios/s4-translate-code/out/
 cd scenarios/s7-career-and-interview/challenge && python3 -m unittest test_opening_hours.py
 ```
 
-> **Toplam Doğrulanan Test Sayısı:** **117 test / 117 Başarılı (0 Hata)**
+> **Toplam Doğrulanan Test Sayısı:** **119 test / 119 Başarılı (0 Hata)**
 
 ---
 

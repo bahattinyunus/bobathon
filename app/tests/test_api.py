@@ -33,6 +33,16 @@ class ApiLogicTest(unittest.TestCase):
         self.assertEqual(levels["caf"], "packed")
         self.assertNotIn("health", levels)
 
+    def test_places_open_now(self):
+        body = self.api.handle("/api/places", {})
+        lib = next(p for p in body["places"] if p["id"] == "lib")
+        self.assertTrue(lib["open_now"])
+
+    def test_events(self):
+        body = self.api.handle("/api/events", {})
+        self.assertGreaterEqual(len(body["events"]), 1)
+        self.assertIn("place_name", body["events"][0])
+
 
 class ApiHttpTest(unittest.TestCase):
     """Runs the real HTTP server on 127.0.0.1 with a random free port."""

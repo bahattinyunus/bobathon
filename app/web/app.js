@@ -37,6 +37,34 @@ function svg(tag, attrs) {
   return node;
 }
 
+// THEME TOGGLE (CR-15)
+function initTheme() {
+  const storedTheme = localStorage.getItem("campusroute-theme");
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  const currentTheme = storedTheme || (prefersDark ? "dark" : "light");
+
+  applyTheme(currentTheme);
+
+  const toggleBtn = $("theme-toggle");
+  if (toggleBtn) {
+    toggleBtn.addEventListener("click", () => {
+      const active = document.documentElement.getAttribute("data-theme") || (prefersDark ? "dark" : "light");
+      const nextTheme = active === "dark" ? "light" : "dark";
+      applyTheme(nextTheme);
+    });
+  }
+}
+
+function applyTheme(theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  localStorage.setItem("campusroute-theme", theme);
+  const icon = $("theme-icon");
+  if (icon) {
+    icon.textContent = theme === "dark" ? "☀️" : "🌙";
+  }
+}
+
+// DRAW CAMPUS SVG MAP
 function drawMap(routePath = []) {
   const map = $("map");
   map.replaceChildren();
@@ -90,10 +118,13 @@ function drawMap(routePath = []) {
   }
 }
 
+// FIND ROUTE
 async function findRoute(event) {
   if (event) event.preventDefault();
   const steps = $("route-steps");
   steps.replaceChildren();
+  const statsRow = $("route-stats");
+
   try {
     const r = await api("/api/route", {
       from: $("from").value,
@@ -103,9 +134,16 @@ async function findRoute(event) {
 
     const stairInfo = r.has_stairs
       ? " ⚠️ (merdiven içerir)"
-      : " ✨ (düz ayak / engelsiz)";
+      : " ✨ (düz ayak / engelsiz rota)";
     $("route-summary").textContent =
       `${r.names[0]} → ${r.names[r.names.length - 1]}: ${r.meters} m, yaklaşık ${r.minutes} dk` + stairInfo;
+
+    // Health & Eco Stats
+    if (statsRow) {
+      statsRow.style.display = "flex";
+      $("stat-calories").textContent = `~${r.calories || Math.round(r.meters * 0.05)} kcal`;
+      $("stat-carbon").textContent = `${r.co2_saved_g || Math.round(r.meters * 0.14)} g CO₂`;
+    }
 
     for (const s of r.steps) {
       steps.append(el("li", s));
@@ -113,10 +151,12 @@ async function findRoute(event) {
     drawMap(r.path);
   } catch (err) {
     $("route-summary").textContent = "⚠ Rota bulunamadı: " + err.message;
+    if (statsRow) statsRow.style.display = "none";
     drawMap();
   }
 }
 
+// SEARCH
 let searchTimer;
 function onSearch() {
   clearTimeout(searchTimer);
@@ -125,16 +165,38 @@ function onSearch() {
     list.replaceChildren();
     const q = $("q").value.trim();
     if (!q) return;
+
     try {
       const { results } = await api("/api/search", { q });
       if (!results.length) {
         list.append(el("li", "Aramanızla eşleşen yer bulunamadı.", "muted"));
         return;
       }
+
+      const byId = Object.fromEntries(campus.places.map((p) => [p.id, p]));
+
       for (const hit of results) {
         const li = el("li");
-        const btn = el("button", "📍 " + hit.label, "search-item-btn");
+        const btn = el("button", "", "search-item-btn");
         btn.type = "button";
+
+        const textSpan = el("span", "📍 " + hit.label);
+        btn.append(textSpan);
+
+        // Check opening status (CR-11)
+        const targetPlace = byId[hit.place_id || hit.id];
+        if (targetPlace && targetPlace.hours) {
+          const isOpen = targetPlace.open_now;
+          if (isOpen !== undefined && isOpen !== null) {
+            const badge = el(
+              "span",
+              isOpen ? "Açık" : "Kapalı",
+              "open-pill " + (isOpen ? "open" : "closed")
+            );
+            btn.append(badge);
+          }
+        }
+
         btn.addEventListener("click", () => {
           $("to").value = hit.id;
           findRoute();
@@ -148,6 +210,7 @@ function onSearch() {
   }, 200);
 }
 
+// REFRESH NOW & CROWD
 async function refreshNow() {
   const now = $("now").value;
   const box = $("next");
@@ -197,9 +260,58 @@ async function refreshNow() {
   } catch (err) {
     crowd.append(el("li", "Yoğunluk bilgisi alınamadı", "muted"));
   }
+
+  // Reload places to update open_now badges
+  try {
+    campus = await api("/api/places", { now });
+  } catch (_) {}
 }
 
+// EVENTS CALENDAR (CR-16)
+async function loadEvents() {
+  const eventsList = $("events-list");
+  if (!eventsList) return;
+  eventsList.replaceChildren();
+
+  try {
+    const { events } = await api("/api/events");
+    if (!events || !events.length) {
+      eventsList.append(el("li", "Bugün için planlanmış etkinlik bulunmuyor.", "muted"));
+      return;
+    }
+
+    for (const ev of events) {
+      const item = el("li", "", "event-card-item");
+
+      const top = el("div", "", "event-top");
+      top.append(el("span", ev.category || "Etkinlik", "event-category-badge"));
+      top.append(el("span", ev.time, "event-time"));
+      item.append(top);
+
+      item.append(el("span", ev.title, "event-title"));
+
+      const btm = el("div", "", "event-bottom");
+      btm.append(el("span", "📍 " + (ev.place_name || ev.place), "event-place"));
+
+      const routeBtn = el("button", "Rotayı Çiz", "event-route-btn");
+      routeBtn.type = "button";
+      routeBtn.addEventListener("click", () => {
+        $("to").value = ev.place_name || ev.place;
+        findRoute();
+      });
+      btm.append(routeBtn);
+
+      item.append(btm);
+      eventsList.append(item);
+    }
+  } catch (err) {
+    eventsList.append(el("li", "Etkinlikler yüklenemedi.", "muted"));
+  }
+}
+
+// INITIALIZE
 async function init() {
+  initTheme();
   campus = await api("/api/places");
   const list = $("place-list");
   for (const p of campus.places) {
@@ -226,6 +338,14 @@ async function init() {
     });
   }
 
+  // Print button
+  const printBtn = $("print-route-btn");
+  if (printBtn) {
+    printBtn.addEventListener("click", () => {
+      window.print();
+    });
+  }
+
   // Quick Chips
   document.querySelectorAll(".quick-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
@@ -237,6 +357,7 @@ async function init() {
 
   await findRoute();
   await refreshNow();
+  await loadEvents();
 }
 
 init().catch((err) => {
