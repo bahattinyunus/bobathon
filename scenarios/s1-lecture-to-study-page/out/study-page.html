@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CS201 Shortest Paths - Midterm Study Sheet</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js"></script>
+  <script>
+    mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+  </script>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --text: #1e293b;
+      --text-muted: #64748b;
+      --primary: #2563eb;
+      --primary-light: #eff6ff;
+      --border: #e2e8f0;
+      --danger: #dc2626;
+      --danger-bg: #fef2f2;
+      --warning: #d97706;
+      --warning-bg: #fffbeb;
+      --success: #16a34a;
+      --success-bg: #f0fdf4;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding: 2rem 1rem;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    header {
+      margin-bottom: 2rem;
+      border-bottom: 2px solid var(--border);
+      padding-bottom: 1.5rem;
+    }
+    h1 { font-size: 2rem; color: #0f172a; margin-bottom: 0.5rem; }
+    .subtitle { color: var(--text-muted); font-size: 1.05rem; }
+    .badge {
+      display: inline-block;
+      padding: 0.2rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+    section {
+      background: var(--card-bg);
+      border-radius: 0.75rem;
+      padding: 1.75rem;
+      margin-bottom: 1.75rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      border: 1px solid var(--border);
+    }
+    h2 {
+      font-size: 1.35rem;
+      color: #0f172a;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    h3 { font-size: 1.1rem; margin: 1rem 0 0.5rem; color: #334155; }
+    p, ul { margin-bottom: 1rem; }
+    ul { padding-left: 1.4rem; }
+    li { margin-bottom: 0.35rem; }
+    code {
+      background: #f1f5f9;
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.9em;
+      color: #0f172a;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.75rem 1rem;
+      border: 1px solid var(--border);
+    }
+    th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #334155;
+    }
+    tr:nth-child(even) { background: #fbfcfd; }
+    .trap-box {
+      border-left: 4px solid var(--danger);
+      background: var(--danger-bg);
+      padding: 1rem 1.25rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      margin-bottom: 1.25rem;
+    }
+    .trap-box strong { color: var(--danger); }
+    .correction-box {
+      border-left: 4px solid var(--success);
+      background: var(--success-bg);
+      padding: 1rem 1.25rem;
+      border-radius: 0 0.5rem 0.5rem 0;
+      margin-bottom: 1.25rem;
+    }
+    .correction-box strong { color: var(--success); }
+    details {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 0.5rem;
+      margin-bottom: 0.75rem;
+      padding: 0.75rem 1rem;
+      transition: background 0.2s ease;
+    }
+    details[open] {
+      background: #ffffff;
+      border-color: #cbd5e1;
+    }
+    summary {
+      font-weight: 600;
+      cursor: pointer;
+      color: #1e293b;
+      user-select: none;
+    }
+    .answer {
+      margin-top: 0.75rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed var(--border);
+      color: #334155;
+    }
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      background: #ffffff;
+      padding: 1rem;
+      border-radius: 0.5rem;
+      margin: 1rem 0;
+      overflow-x: auto;
+    }
+    footer {
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <span class="badge">CS201 Midterm Prep</span>
+      <h1>Shortest Path Algorithms: Study Sheet</h1>
+      <p class="subtitle">Comprehensive review of graph representations, BFS, Dijkstra, A*, and Bellman-Ford with CampusRoute engineering applications.</p>
+    </header>
+
+    <!-- SECTION 1: KEY IDEAS -->
+    <section>
+      <h2>1. Key Ideas</h2>
+      <h3>Graph Representation</h3>
+      <ul>
+        <li><strong>Vertices (V):</strong> Buildings and path junctions. <strong>Edges (E):</strong> Walkways with non-negative weights in meters.</li>
+        <li><strong>Adjacency List:</strong> Memory <code>O(V + E)</code>. Optimal for campus navigation because campus graphs are <em>sparse</em> (each node connects to ~3 neighbors).</li>
+        <li><strong>Adjacency Matrix:</strong> Memory <code>O(V&sup2;)</code>. Inefficient for sparse networks.</li>
+      </ul>
+
+      <h3>The 4 Algorithms</h3>
+      <ul>
+        <li><strong>BFS (Breadth-First Search):</strong> Level-by-level traversal using a FIFO Queue. Finds shortest paths <em>strictly in number of edges (hops)</em>. Only minimizes metric distance if all edges have equal positive weight. Time: <code>O(V + E)</code>.</li>
+        <li><strong>Dijkstra's Algorithm:</strong> Greedy single-source shortest path for graphs with <strong>non-negative edge weights</strong>. Maintains a min-heap (Priority Queue). Settle closest unfinished vertex, relax edges, and skip already settled nodes (lazy deletion). Time: <code>O((V + E) log V)</code>.</li>
+        <li><strong>A* (A-Star):</strong> Guided Dijkstra using a heuristic function <code>f(v) = g(v) + h(v)</code>, where <code>g(v)</code> is exact distance so far and <code>h(v)</code> estimates remaining distance to goal. Guaranteed optimal if <code>h</code> is <em>admissible</em> (never overestimates). Euclidean straight-line distance is admissible on a 2D campus map.</li>
+        <li><strong>Bellman-Ford:</strong> Dynamic programming algorithm relaxing all edges <code>V - 1</code> times. Handles negative edge weights and detects negative cycles. Time: <code>O(V &times; E)</code>.</li>
+      </ul>
+
+      <h3>CampusRoute Engineering Applications</h3>
+      <ul>
+        <li><strong>Step-free Routing ("Avoid stairs"):</strong> Filter out edges flagged with stairs prior to running Dijkstra. Does not require a new algorithm.</li>
+        <li><strong>Via Detours:</strong> Compute two chained Dijkstra runs (Start &rarr; Via, then Via &rarr; Goal) and concatenate the paths.</li>
+        <li><strong>Walking Estimates:</strong> Total route meters divided by average walking speed (80 m/min), rounded up using <code>ceil</code>.</li>
+      </ul>
+    </section>
+
+    <!-- SECTION 2: COMPARISON TABLE -->
+    <section>
+      <h2>2. Algorithm Comparison Table</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Algorithm</th>
+            <th>Edge Weights</th>
+            <th>Core Data Structure</th>
+            <th>Time Complexity</th>
+            <th>Optimality Guarantee</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>BFS</strong></td>
+            <td>Unweighted / Equal</td>
+            <td>Queue (FIFO)</td>
+            <td><code>O(V + E)</code></td>
+            <td>Fewest hops; optimal distance only if all edge costs identical</td>
+          </tr>
+          <tr>
+            <td><strong>Dijkstra</strong></td>
+            <td>Non-negative (<code>&ge; 0</code>)</td>
+            <td>Min-Heap (Priority Queue)</td>
+            <td><code>O((V + E) log V)</code></td>
+            <td>Always optimal shortest distance when weights are non-negative</td>
+          </tr>
+          <tr>
+            <td><strong>A*</strong></td>
+            <td>Non-negative + Heuristic</td>
+            <td>Min-Heap (Priority Queue)</td>
+            <td><code>O((V + E) log V)</code> worst case</td>
+            <td>Optimal if heuristic is admissible (<code>h(v) &le; h*(v)</code>)</td>
+          </tr>
+          <tr>
+            <td><strong>Bellman-Ford</strong></td>
+            <td>Any real numbers (negative allowed)</td>
+            <td>None (nested edge relaxation loops)</td>
+            <td><code>O(V &times; E)</code></td>
+            <td>Optimal if no negative cycle; detects negative cycles</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- SECTION 3: CONCEPT MAP -->
+    <section>
+      <h2>3. Shortest Path Concept Map</h2>
+      <div class="mermaid">
+flowchart TD
+    G["Graph Problem: Shortest Path"] --> W{"Edge Weights?"}
+    
+    W -- "Unweighted / Equal weights" --> BFS["BFS (Queue)"]
+    W -- "Non-negative weights" --> D{"Heuristic to Goal Available?"}
+    W -- "Negative weights allowed" --> BF["Bellman-Ford (Edge Relaxation)"]
+
+    D -- "No / General exploration" --> DJ["Dijkstra (Min-Heap)"]
+    D -- "Yes / Goal-directed" --> AS["A* Search (g + h)"]
+
+    BFS -. "Special case of Dijkstra when w=1" .-> DJ
+    DJ -. "Special case of A* when h(v) = 0" .-> AS
+    BF -. "Slower O(VE) alternative when weights < 0" .-> DJ
+      </div>
+    </section>
+
+    <!-- SECTION 4: COMMON EXAM TRAPS -->
+    <section>
+      <h2>4. Common Exam Traps &amp; Error Corrections</h2>
+
+      <div class="trap-box">
+        <strong>Factual Error in Draft Lecture Notes:</strong>
+        <p><em>Quote from notes:</em> &ldquo;IMPORTANT: Dijkstra works with negative edge weights as long as there is no negative cycle &mdash; prof said this is a common exam question&rdquo;</p>
+      </div>
+
+      <div class="correction-box">
+        <strong>The Correction (Essential Exam Fact):</strong>
+        <p><strong>This claim is FALSE.</strong> Dijkstra's algorithm <strong>cannot</strong> guarantee correct shortest paths in graphs with negative edge weights, <em>even if there are no negative cycles</em>.</p>
+        <p><strong>Why:</strong> Dijkstra's greedy invariant assumes that once a vertex is popped from the min-heap and marked settled, its recorded distance is final. A negative edge encountered later could provide a shorter path to an already settled vertex, which Dijkstra will never revisit (or will handle inefficiently if re-opened). For negative edge weights, use <strong>Bellman-Ford</strong>.</p>
+        <p><strong>Counter-Example:</strong> Consider vertices S, A, B. Edges: <code>S &rarr; A</code> (weight 4), <code>S &rarr; B</code> (weight 2), <code>B &rarr; A</code> (weight -5). Settle S. Next closest is B (dist 2). Then B settles, relaxes A to <code>2 + (-5) = -3</code>. But if Dijkstra popped A first in a graph where A had smaller initial edge, A would never be updated.</p>
+      </div>
+
+      <h3>Other Key Traps</h3>
+      <ul>
+        <li><strong>BFS is not for weighted graphs:</strong> 2 hops of 100m (200m) is worse than 3 hops of 30m (90m). BFS only counts hops.</li>
+        <li><strong>Admissibility of Heuristics:</strong> If <code>h(v)</code> overestimates even by 1 meter, A* can return a suboptimal path. Euclidean straight-line distance is always admissible because a straight line is the shortest distance between two points in Euclidean space.</li>
+        <li><strong>Heap Tie-Breaking in Python:</strong> When storing <code>(dist, node)</code> in <code>heapq</code>, equal distances cause Python to compare <code>node</code> objects. If custom node objects don't define <code>&lt;</code>, it raises a <code>TypeError</code>. Solution: push <code>(dist, count, node)</code> using <code>itertools.count()</code>.</li>
+      </ul>
+    </section>
+
+    <!-- SECTION 5: SELF-TEST QUESTIONS -->
+    <section>
+      <h2>5. Self-Test Questions</h2>
+
+      <details>
+        <summary>Q1: Why is an adjacency list preferred over an adjacency matrix for CampusRoute?</summary>
+        <div class="answer">
+          <p>CampusRoute maps are <em>sparse graphs</em> where each building or junction connects to only 3-4 walkways. An adjacency list uses <code>O(V + E)</code> memory, whereas an adjacency matrix consumes <code>O(V&sup2;)</code>, wasting space on thousands of zero entries and slowing neighbor iteration.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q2: Does Dijkstra's algorithm work with negative edge weights if there are no negative cycles?</summary>
+        <div class="answer">
+          <p><strong>No.</strong> Dijkstra assumes edge weights are non-negative so that distance labels only grow. A negative edge can invalidate previously settled vertices. Bellman-Ford must be used when negative weights exist.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q3: What makes a heuristic admissible in A*, and why is Euclidean distance admissible on campus?</summary>
+        <div class="answer">
+          <p>A heuristic <code>h(v)</code> is admissible if it never overestimates the true cost to reach the goal: <code>h(v) &le; h*(v)</code> for all <code>v</code>. Euclidean (straight-line) distance is admissible on a campus map because the physical straight line is the absolute minimum distance between two coordinate points; no walkway can be shorter than straight line.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q4: How does CampusRoute implement "step-free routing" without writing a new algorithm?</summary>
+        <div class="answer">
+          <p>It filters the graph edges before routing, omitting any edge flagged with <code>stairs: true</code>, and then executes standard Dijkstra on the filtered graph.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>Q5: What is lazy deletion in Dijkstra's priority queue, and why is it used in Python's heapq?</summary>
+        <div class="answer">
+          <p>Standard binary heaps do not support efficient <code>decrease-key</code> operations. Instead of updating an existing element's key in the heap, Dijkstra pushes a new tuple <code>(new_dist, v)</code>. When a node is popped, if it has already been settled (marked in a <code>done</code> set), it is simply skipped (lazily discarded).</p>
+        </div>
+      </details>
+    </section>
+
+    <footer>
+      <p>Prepared for CS201 Midterm &bull; CampusRoute Shortest Paths Study Sheet</p>
+    </footer>
+  </div>
+</body>
+</html>
